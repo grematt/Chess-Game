@@ -4,6 +4,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputAdapter;
 
+import pieces.Bishop;
+import pieces.King;
+import pieces.Knight;
+import pieces.Pawn;
+import pieces.Piece;
+import pieces.Queen;
+import pieces.Rook;
+import pieces.Type;
+
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;

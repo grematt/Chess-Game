@@ -1,3 +1,12 @@
+import pieces.Bishop;
+import pieces.King;
+import pieces.Knight;
+import pieces.NullPiece;
+import pieces.Pawn;
+import pieces.Piece;
+import pieces.Queen;
+import pieces.Rook;
+import pieces.Type;
 
 public class ChessBoard {
 	private Piece[][] board;
