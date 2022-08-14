@@ -107,7 +107,6 @@ public class BoardManager extends JPanel{
 	     }
 	}
 	
-	
 	private class ClickListener extends MouseAdapter {
 		
 		public void mousePressed(MouseEvent e)
@@ -164,7 +163,7 @@ public class BoardManager extends JPanel{
 				}
 				moveNum++;
 				if(piece.getType() == Type.King)
-					rookCastling(target, piece); // as when castling only the king is dragged by the player, the rook must be removed separately
+					checkForCastling(target, piece); // as when castling only the king is dragged by the player, the rook must be removed separately
 				piece.setHasMoved(true);
 				if(getComponentAt(x,y) != image) //remove the captured pieces JLabel
 		    		remove(getComponentAt(x,y));
@@ -223,7 +222,7 @@ public class BoardManager extends JPanel{
 		return BOARD_SIZE - position * BOARD_OFFSET;
 	}
 	
-	private void rookCastling(Point target, Piece piece) // moves the rook while castling
+	private void checkForCastling(Point target, Piece piece) // moves the rook while castling
 	{
 		int targetX = boardToPieceX(target.x);
 		
