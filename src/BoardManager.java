@@ -151,7 +151,7 @@ public class BoardManager extends JPanel{
 			{
 				x = round(x);
 				y = round(y);
-				image.setLocation(x+1,y+1); // prevents bug where if x and y of image are less than the nearest hundred, the wrong image is captured.
+				image.setLocation(x+1,y+1); // prevents bug where if x and y of image are less than the nearest hundred, the wrong image is captured
 				if(didEnPassnat(piece)) //removing image of captured pawn if en passant took place
 				{
 					int pawnX = pieceToBoardX(piece.getXPos()); 
