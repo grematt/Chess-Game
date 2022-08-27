@@ -6,10 +6,13 @@ Bare bones chess game between two human players using the same computer. Created
 * Prevention of illegal moves
 * Support for all legal moves (castling, en passant, promotion, ect.)
 
-# Installation
+# Installation 
+Before attempting to intall and run, make sure the JDK is installed. <br /> <br />
 **Windows:**
 
-After downloading the zip file, unzip place it in any location. <br />
+
+
+After downloading the zip file, unzip and place it in any location. <br />
 <br />To run the game, open the command prompt and navitgate to the Chess-Game-Main directory. Enter the following commnands: 
 
 ```
