@@ -235,19 +235,16 @@ public class BoardManager extends JPanel{
                 board.forceMove(0,0,3,0);
                 getComponentAt(100,800).setLocation(400,800);
             }
-            
             else if(boardToPieceX(prevLocation.x) < targetX && piece.getColor())
             {
                 board.forceMove(7,0,5,0);
                 getComponentAt(800,800).setLocation(600,800);
             }
-            
             else if(boardToPieceX(prevLocation.x) > targetX && !piece.getColor())
             {
                 board.forceMove(0,7,3,7);
                 getComponentAt(100,100).setLocation(400,100);
             }
-            
             else
             {
                 board.forceMove(7,7,5,7);
