@@ -8,16 +8,14 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 @SuppressWarnings("serial")
 public class BoardManager extends JPanel{
 	/*
-	 * This class has two main responsibilities, creating and maintaining the GUI of the game and 2, using the information in the GUI,
-	 * updating the values in the board.
+	 * This class is the JPanel that contains the board. The purpose of this class is to manage the location of the pieces on the board GUI by updating their positions
+	 * in the board Piece[][] and reflecting that change in the GUI. 
 	 */
 	public static int BOARD_OFFSET = 100;
 	public static int BOARD_SIZE = 800;
@@ -28,8 +26,9 @@ public class BoardManager extends JPanel{
 	private Point location; // location of image currently being interacted with
     private Point prevLocation;
     private MouseEvent pressed;
-    private Boolean turn; //true == white player's turn, false == black player's turn
-    private Boolean enabled;
+    private Utils util;
+    private boolean turn; //true == white player's turn, false == black player's turn
+    private boolean enabled;
     private int moveNum;
     private boolean gameOver;
     private boolean wait;
@@ -43,6 +42,7 @@ public class BoardManager extends JPanel{
 		this.wait = false;
 		drawer = new BoardDrawer();
 		board = new ChessBoard();
+		this.util = new Utils();
 		populateGUI(board);
 	}
 	
@@ -76,8 +76,8 @@ public class BoardManager extends JPanel{
 					DragListener dragListener = new DragListener();
 					img.addMouseListener(clickListener);
 			    	img.addMouseMotionListener(dragListener);
-			    	int x = pieceToBoardX(piece.getXPos());
-			    	int y = pieceToBoardY(piece.getYPos());
+			    	int x = util.pieceToBoardX(piece.getXPos());
+			    	int y = util.pieceToBoardY(piece.getYPos());
 			    	this.add(img);
 			    	img.setLocation(x,y);
 				}
@@ -110,8 +110,8 @@ public class BoardManager extends JPanel{
 			}
 			int x = e.getComponent().getX();
 			int y = e.getComponent().getY();
-			x = boardToPieceX(x);
-			y = boardToPieceY(y);
+			x = util.boardToPieceX(x);
+			y = util.boardToPieceY(y);
 			if(board.getBoard()[x][y].getColor() == turn)
 			{
 		    	prevLocation = e.getComponent().getLocation();
@@ -126,7 +126,7 @@ public class BoardManager extends JPanel{
 	    {
 			if(!enabled)
 				return;
-			Piece piece = board.getBoard()[boardToPieceX(prevLocation.x)][boardToPieceY(prevLocation.y)]; 
+			Piece piece = board.getBoard()[util.boardToPieceX(prevLocation.x)][util.boardToPieceY(prevLocation.y)]; 
 	    	Point target = e.getComponent().getLocation();
 		    Component image = e.getComponent();
 	    	int x = location.x;
@@ -137,17 +137,17 @@ public class BoardManager extends JPanel{
 	    		location = e.getComponent().getLocation();
 	    	}
 	    	Piece[][] undoBoard = board.copyBoard(board.getBoard()); // copy of current board to undo a move if needed
-	    	if(outOfBounds(x,y) || !board.move(piece.getXPos(), piece.getYPos(), boardToPieceX(target.x), boardToPieceY(target.y), moveNum, undoBoard)) 
+	    	if(util.outOfBounds(x,y) || !board.move(piece.getXPos(), piece.getYPos(), util.boardToPieceX(target.x), util.boardToPieceY(target.y), moveNum, undoBoard)) 
 	    		undoImageMove(image);
 	    	else //valid move
 			{
-				x = round(x);
-				y = round(y);
+				x = util.round(x);
+				y = util.round(y);
 				image.setLocation(x+1,y+1); // prevents bug where if x and y of image are less than the nearest hundred, the wrong image is captured.
-				if(didEnPassnat(piece)) //removing image of captured pawn if en passant took place
+				if(util.didEnPassnat(piece, moveNum)) //removing image of captured pawn if en passant took place
 				{
-					int pawnX = pieceToBoardX(piece.getXPos()); 
-					int pawnY = pieceToBoardY(piece.getYPos()); 
+					int pawnX = util.pieceToBoardX(piece.getXPos()); 
+					int pawnY = util.pieceToBoardY(piece.getYPos()); 
 					if(piece.getColor())
 						remove(getComponentAt(pawnX,pawnY+IMAGE_SIZE));
 					else
@@ -170,21 +170,7 @@ public class BoardManager extends JPanel{
 	    }
    
 	}
-	
-	private int round(int num) // round up or down to the nearest 100 
-	{
-		if(num % 100 > 49)
-			num = (num+99) / 100 * 100;
-		else
-			num = num / 100 * 100;
-		return num;
-	}
-	
-	private boolean outOfBounds(int x, int y)
-	{
-		return x > 849 || y > 849 || x < 50 || y < 50;
-	}
-	
+
 	private void undoImageMove(Component image) // returns in image to its previous location
 	{
 		int x = prevLocation.x;
@@ -193,48 +179,27 @@ public class BoardManager extends JPanel{
 		location = new Point(x,y);
 	}
 	
-	// convert coordinates from piece array to board GUI and vice versa.
-	private int boardToPieceX(int position)
-	{
-		return Math.abs(round(position) - BOARD_OFFSET) / IMAGE_SIZE;
-	}
-	
-	private int boardToPieceY(int position)
-	{
-		return Math.abs(round(position) - BOARD_SIZE) / IMAGE_SIZE;
-	}
-
-	private int pieceToBoardX(int position)
-	{
-		return position * BOARD_OFFSET + BOARD_OFFSET;
-	}
-	
-	private int pieceToBoardY(int position)
-	{
-		return BOARD_SIZE - position * BOARD_OFFSET;
-	}
-	
 	private void checkForCastling(Point target, Piece piece) // moves the rook while castling
 	{
-		int targetX = boardToPieceX(target.x);
+		int targetX = util.boardToPieceX(target.x);
 		
 		// if the difference between the initial location of the king and new location is 2, the king is castling
-		if(Math.abs(boardToPieceX(prevLocation.x) - targetX) == 2) 
+		if(Math.abs(util.boardToPieceX(prevLocation.x) - targetX) == 2) 
 		{
 			// deciding which rook to move
-			if(boardToPieceX(prevLocation.x) > targetX && piece.getColor()) 
+			if(util.boardToPieceX(prevLocation.x) > targetX && piece.getColor()) 
 			{
 				board.forceMove(0,0,3,0);
 				getComponentAt(100,800).setLocation(400,800);
 			}
 			
-			else if(boardToPieceX(prevLocation.x) < targetX && piece.getColor())
+			else if(util.boardToPieceX(prevLocation.x) < targetX && piece.getColor())
 			{
 				board.forceMove(7,0,5,0);
 				getComponentAt(800,800).setLocation(600,800);
 			}
 			
-			else if(boardToPieceX(prevLocation.x) > targetX && !piece.getColor())
+			else if(util.boardToPieceX(prevLocation.x) > targetX && !piece.getColor())
 			{
 				board.forceMove(0,7,3,7);
 				getComponentAt(100,100).setLocation(400,100);
@@ -247,46 +212,9 @@ public class BoardManager extends JPanel{
 			}
 		}
 	}
-	
-	private boolean didEnPassnat(Piece piece)
-	{
-		if(piece.getType() != Type.Pawn)
-			return false;
-		Pawn pawn = (Pawn) piece;
-		if(pawn.getWhenEnPass() == moveNum)
-			return true;
-		return false;
-	}
 
-	private boolean inCheckmate(King king, Piece[][] undoBoard)
-	{
-		Piece[][] currentBoard = board.getBoard();
-		if(!king.inCheck(currentBoard))
-			return false;
-		for(int x=0;x<8;x++)
-			for(int y=0;y<8;y++)
-			{
-				if(currentBoard[x][y].getColor() != king.getColor())
-					continue;
-				for(int i=0;i<8;i++)
-					for(int j=0;j<8;j++)
-					{
-						if(board.move(x,y,i,j,moveNum,board.copyBoard(undoBoard)))
-						{
-							board.setBoard(undoBoard);
-							return false;
-						}
-						board.setBoard(board.copyBoard(undoBoard));
-						currentBoard = board.getBoard();
-					}
-			}
-		gameOver = true;
-		return true;
-	}
-	
 	private void checkForCheckmate()
 	{
-		Piece[][] undoBoard = board.copyBoard(board.getBoard());
 		String path;
 		King myKing;
     	if(turn)
@@ -299,14 +227,15 @@ public class BoardManager extends JPanel{
     		myKing = board.getBlackKing();
     		path = "matedBlackKing";
     	}
-    	if(!inCheckmate(myKing,undoBoard))
+    	if(!board.inCheckmate(myKing, moveNum))
     		return;
-		int x = pieceToBoardX(myKing.getXPos());
-		int y = pieceToBoardY(myKing.getYPos());
+    	gameOver = true;
+		int x = util.pieceToBoardX(myKing.getXPos());
+		int y = util.pieceToBoardY(myKing.getYPos());
 		remove(getComponentAt(x,y));
 		JLabel img = new JLabel();
 		img.setSize(IMAGE_SIZE,IMAGE_SIZE);
-    	img.setIcon(new ImageIcon("./images/"+path+".png"));
+    	img.setIcon(new ImageIcon(getClass().getResource("res/"+path+".png")));
     	add(img);
     	img.setLocation(x, y);
 	}
@@ -353,41 +282,33 @@ public class BoardManager extends JPanel{
 				add(queen);
 				knight.setLocation(300,0);
 				knight.setSize(IMAGE_SIZE,IMAGE_SIZE);
-				knight.setIcon(new ImageIcon("./images/"+color+"Knight.png"));
+				knight.setIcon(new ImageIcon(getClass().getResource("res/"+color+"Knight.png")));
 				bishop.setLocation(400,0);
 				bishop.setSize(IMAGE_SIZE,IMAGE_SIZE);
-				bishop.setIcon(new ImageIcon("./images/"+color+"Bishop.png"));
+				bishop.setIcon(new ImageIcon(getClass().getResource("res/"+color+"Bishop.png")));
 				rook.setLocation(500,0);
 				rook.setSize(IMAGE_SIZE,IMAGE_SIZE);
-				rook.setIcon(new ImageIcon("./images/"+color+"Rook.png"));
+				rook.setIcon(new ImageIcon(getClass().getResource("res/"+color+"Rook.png")));
 				queen.setLocation(600,0);
 				queen.setSize(IMAGE_SIZE,IMAGE_SIZE);
-				queen.setIcon(new ImageIcon("./images/"+color+"Queen.png"));
+				queen.setIcon(new ImageIcon(getClass().getResource("res/"+color+"Queen.png")));
 				wait = true;
-				knight.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+				knight.addActionListener(event -> {
 						board.getBoard()[localX][localY] = new Knight(localX,localY,localIsWhite,Type.Knight);
 						replacePromoteImage(knight,bishop,rook,queen,localX,localLoc,knight);
-					}
-				});
-				bishop.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+					});
+				bishop.addActionListener(event -> {
 						board.getBoard()[localX][localY] = new Bishop(localX,localY,localIsWhite,Type.Bishop);
 						replacePromoteImage(knight,bishop,rook,queen,localX,localLoc,bishop);
-					}
-				});
-				rook.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+						});
+				rook.addActionListener(event -> {
 						board.getBoard()[localX][localY] = new Rook(localX,localY,localIsWhite,Type.Rook);
 						replacePromoteImage(knight,bishop,rook,queen,localX,localLoc,rook);
-					}
-				});
-				queen.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+					});
+				queen.addActionListener(event -> {
 						board.getBoard()[localX][localY] = new Queen(localX,localY,localIsWhite,Type.Queen);
 						replacePromoteImage(knight,bishop,rook,queen,localX,localLoc,queen);
-					}
-				});
+					});
 				repaint();
 				break;
 			}
@@ -396,7 +317,7 @@ public class BoardManager extends JPanel{
 	
 	private void replacePromoteImage(JButton knight, JButton bishop, JButton rook, JButton queen, int x, int y, JButton promoteChoice)
 	{
-		remove(getComponentAt(pieceToBoardX(x),y));
+		remove(getComponentAt(util.pieceToBoardX(x),y));
 		JLabel newImg = new JLabel();
 		ClickListener clickListener = new ClickListener();
 		DragListener dragListener = new DragListener();
@@ -405,7 +326,7 @@ public class BoardManager extends JPanel{
 		newImg.setSize(IMAGE_SIZE,IMAGE_SIZE);
 		newImg.setIcon(promoteChoice.getIcon());
 		add(newImg);
-		newImg.setLocation(pieceToBoardX(x),y);
+		newImg.setLocation(util.pieceToBoardX(x),y);
 		remove(knight);
 		remove(bishop);
 		remove(rook);
@@ -416,59 +337,28 @@ public class BoardManager extends JPanel{
 		repaint();
 	}
 	
-	private boolean inStalemate(Piece[][] undoBoard)
-	{
-		Piece[][] currentBoard = board.getBoard();
-		King myKing;
-		if(turn)
-			myKing = board.getWhiteKing();
-		else
-			myKing = board.getBlackKing();
-		if(myKing.inCheck(currentBoard))
-			return false;
-		for(int x=0;x<8;x++)
-			for(int y=0;y<8;y++)
-			{
-				if(currentBoard[x][y].getColor() != turn)
-					continue;
-				for(int i=0;i<8;i++)
-					for(int j=0;j<8;j++)
-					{
-						if(board.move(x,y,i,j,moveNum,board.copyBoard(undoBoard)))
-						{
-								board.setBoard(undoBoard);
-								return false;
-						}
-						board.setBoard(board.copyBoard(undoBoard));
-						currentBoard = board.getBoard();
-					}
-			}
-		gameOver = true;
-		return true;
-	}
-	
 	private void checkForStalemate()
 	{
-		Piece[][] undoBoard = board.copyBoard(board.getBoard());
-    	if(!inStalemate(undoBoard))
+    	if(!board.inStalemate(moveNum, turn))
     		return;
+    	gameOver = true;
     	King blackKing = board.getBlackKing();
 		King whiteKing = board.getWhiteKing();
-		int x = pieceToBoardX(whiteKing.getXPos());
-		int y = pieceToBoardY(whiteKing.getYPos());
+		int x = util.pieceToBoardX(whiteKing.getXPos());
+		int y = util.pieceToBoardY(whiteKing.getYPos());
 		remove(getComponentAt(x,y));
 		JLabel img = new JLabel();
 		img.setSize(IMAGE_SIZE,IMAGE_SIZE);
-    	img.setIcon(new ImageIcon("./images/staleWhiteKing.png"));
+    	img.setIcon(new ImageIcon(getClass().getResource("res/staleWhiteKing.png")));
     	add(img);
     	img.setLocation(x, y);
     	
-    	x = pieceToBoardX(blackKing.getXPos());
-		y = pieceToBoardY(blackKing.getYPos());
+    	x = util.pieceToBoardX(blackKing.getXPos());
+		y = util.pieceToBoardY(blackKing.getYPos());
 		remove(getComponentAt(x,y));
 		JLabel img2 = new JLabel();
 		img2.setSize(IMAGE_SIZE,IMAGE_SIZE);
-    	img2.setIcon(new ImageIcon("./images/staleBlackKing.png"));
+    	img2.setIcon(new ImageIcon(getClass().getResource("res/staleBlackKing.png")));
     	add(img2);
     	img2.setLocation(x, y);
 	}

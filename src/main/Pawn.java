@@ -1,7 +1,7 @@
 package main;
 
 public class Pawn extends Piece {
-	private int moveNum;
+	private int lastMoveNum;
 	private boolean movedDouble;
 	private int whenEnPass;
 	
@@ -13,7 +13,7 @@ public class Pawn extends Piece {
 	public Pawn(int xPos, int yPos, boolean color, Type type, int moveNum, boolean movedDouble, int whenEnPass, boolean hasMoved)
 	{
 		super(xPos, yPos, color, type);
-		this.moveNum = moveNum;
+		this.lastMoveNum = moveNum;
 		this.movedDouble = true;
 		this.whenEnPass = whenEnPass;
 		this.setHasMoved(hasMoved);
@@ -21,7 +21,7 @@ public class Pawn extends Piece {
 	
 	public int getMoveNum()
 	{
-		return this.moveNum;
+		return this.lastMoveNum;
 	}
 	
 	public boolean hasMovedDouble()
@@ -46,7 +46,7 @@ public class Pawn extends Piece {
 		{
 			if(board[this.getXPos()][this.getYPos()+1].getType() == Type.None)
 			{
-				this.moveNum = moveNum;
+				this.lastMoveNum = moveNum;
 				this.movedDouble = true;
 				return true;
 			}
@@ -55,7 +55,7 @@ public class Pawn extends Piece {
 		{
 			if(board[this.getXPos()][this.getYPos()-1].getType() == Type.None)
 			{
-				this.moveNum = moveNum;
+				this.lastMoveNum = moveNum;
 				this.movedDouble = true;
 				return true;
 			}

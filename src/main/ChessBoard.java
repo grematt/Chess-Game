@@ -1,6 +1,10 @@
 package main;
 
 public class ChessBoard {
+    /*
+     * This class contains the Piece[][] that stores the actual locations of every piece. It also contains methods directly dealing with the board, not the gui, such as moving
+     * pieces and determine if a player is in checkmate/stalemate
+     */
 	private Piece[][] board;
 	
 	public ChessBoard()
@@ -143,5 +147,62 @@ public class ChessBoard {
     		}
 		return undoBoard;
 	}
+	
+	public boolean inCheckmate(King king, int moveNum)
+    {
+        Piece[][] currentBoard = this.board;
+        Piece[][] undoBoard = copyBoard(currentBoard);
+        if(!king.inCheck(currentBoard))
+            return false;
+        for(int x=0;x<8;x++)
+            for(int y=0;y<8;y++)
+            {
+                if(currentBoard[x][y].getColor() != king.getColor())
+                    continue;
+                for(int i=0;i<8;i++)
+                    for(int j=0;j<8;j++)
+                    {
+                        if(this.move(x,y,i,j,moveNum,copyBoard(undoBoard)))
+                        {
+                            this.setBoard(undoBoard);
+                            return false;
+                        }
+                        this.setBoard(copyBoard(undoBoard));
+                        currentBoard = this.board;
+                    }
+            }
+        return true;
+    }
+	
+	public boolean inStalemate(int moveNum, boolean turn)
+    {
+        Piece[][] currentBoard = board;
+        Piece[][] undoBoard = copyBoard(currentBoard);
+        King myKing;
+        if(turn)
+            myKing = this.getWhiteKing();
+        else
+            myKing = this.getBlackKing();
+        if(myKing.inCheck(currentBoard))
+            return false;
+        for(int x=0;x<8;x++)
+            for(int y=0;y<8;y++)
+            {
+                if(currentBoard[x][y].getColor() != turn)
+                    continue;
+                for(int i=0;i<8;i++)
+                    for(int j=0;j<8;j++)
+                    {
+                        if(this.move(x,y,i,j,moveNum,copyBoard(undoBoard)))
+                        {
+                                this.setBoard(undoBoard);
+                                return false;
+                        }
+                        this.setBoard(copyBoard(undoBoard));
+                        currentBoard = board;
+                    }
+            }
+        return true;
+    }
 	
 }
