@@ -15,7 +15,7 @@ import java.awt.event.MouseEvent;
 public class BoardManager extends JPanel{
 	/*
 	 * This class is the JPanel that contains the board. The purpose of this class is to manage the location of the pieces on the board GUI by updating their positions
-	 * in the board Piece[][] and reflecting that change in the GUI. 
+	 * in the Board Piece[][] and reflecting that change in the GUI. 
 	 */
 	public static int BOARD_OFFSET = 100;
 	public static int BOARD_SIZE = 800;
