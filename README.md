@@ -3,6 +3,7 @@ Bare bones chess game between two human players using the same computer. Created
 
 # Features
 * Drag and drop functionality
+* Checkmate and Stalemate detection
 * Prevention of illegal moves
 * Support for all legal moves (castling, en passant, promotion, ect.)
 
