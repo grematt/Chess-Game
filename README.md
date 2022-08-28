@@ -27,3 +27,8 @@ C:\Chess-Game-main\src\main> cd ..
 ```
 C:\Chess-Game-main\src> java main.ChessLoader
 ```
+
+# Planned Features
+* Board flipping functionality
+* Options for piece and board theme
+* Player vs Computer games
