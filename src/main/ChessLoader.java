@@ -7,7 +7,7 @@ public class ChessLoader {
     {
         JFrame chessGame = new JFrame();
         chessGame.setResizable(false);
-        chessGame.setSize(1000,1000);
+        chessGame.setSize(850,850);
         chessGame.setTitle("Chess");
         chessGame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         BoardManager manager = new BoardManager();
