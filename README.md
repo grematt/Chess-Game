@@ -1,5 +1,6 @@
 # Chess-Game
-Bare bones chess game between two human players using the same computer. Created using Java Swing.
+Bare bones chess game between two human players using the same computer. Created using Java Swing. <br />
+**NOTE: A monitor large enough to support a 1000 x 1000 swing window must be used to prevent the window from being cut off. This may be an issue for smaller laptops.**
 
 # Features
 * Drag and drop functionality
