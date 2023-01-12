@@ -14,7 +14,6 @@ Before attempting to intall and run, make sure the JDK is installed. <br /> <br 
 
 
 
-After downloading the zip file, unzip and place it in any location. <br />
 <br />To run the game, open the command prompt and navitgate to the Chess-Game-Main directory. Enter the following commands: 
 
 ```
